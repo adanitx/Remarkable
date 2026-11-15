@@ -1,7 +1,7 @@
 const PDF_PATH = /\.pdf$/i;
 const VIEWER_PAGE = 'viewer.html';
 const CAPTURE_PAGE = 'capture.html';
-const SETUP_PAGE = 'setup.html';
+const SETTINGS_VERSION = 3;
 
 chrome.action.onClicked.addListener(() => {
   chrome.runtime.openOptionsPage();
@@ -9,9 +9,24 @@ chrome.action.onClicked.addListener(() => {
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
-    chrome.tabs.create({ url: chrome.runtime.getURL(SETUP_PAGE) });
+    chrome.runtime.openOptionsPage();
   }
 });
+
+async function migrateSettings() {
+  const stored = await chrome.storage.sync.get({
+    settingsVersion: 1,
+    findShortcut: 'Alt+G'
+  });
+  if (stored.settingsVersion >= SETTINGS_VERSION) return;
+  const replaceBrokenCombo = (value) => (value === 'Alt+F' ? 'Alt+G' : value);
+  const moveOldDefault = (value) => (value === 'Alt+G' ? 'Ctrl+Shift+F' : value);
+  await chrome.storage.sync.set({
+    settingsVersion: SETTINGS_VERSION,
+    findShortcut: moveOldDefault(replaceBrokenCombo(stored.findShortcut))
+  });
+}
+migrateSettings().catch(() => {});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === 'remarkable:capture-tab') {
@@ -36,8 +51,8 @@ const CAPTURE_INTERVAL_MS = 600;
 
 async function captureTab(windowId) {
   if (!(await chrome.permissions.contains({ origins: ['<all_urls>'] }))) {
-    await chrome.tabs.create({ url: chrome.runtime.getURL(SETUP_PAGE) });
-    throw new Error('Falta el permiso de acceso a sitios web; concédelo en la página de configuración.');
+    await chrome.runtime.openOptionsPage();
+    throw new Error('Falta el permiso de acceso a sitios web; concédelo en la configuración de Remarkable.');
   }
   const wait = lastCaptureAt + CAPTURE_INTERVAL_MS - Date.now();
   if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
@@ -58,37 +73,48 @@ function fileAccessAllowed() {
 
 chrome.commands.onCommand.addListener(async (command) => {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-  if (!tab?.url) {
-    await chrome.tabs.create({ url: chrome.runtime.getURL(SETUP_PAGE) });
-    return;
-  }
+  if (!tab) return;
+  const url = tab.url || '';
 
-  if (tab.url.startsWith('file:') && !(await fileAccessAllowed())) {
-    await chrome.tabs.create({
-      url: `chrome://extensions/?id=${chrome.runtime.id}`,
-      index: tab.index + 1,
-      openerTabId: tab.id
-    });
+  if (url.startsWith('file:') && !(await fileAccessAllowed())) {
+    await chrome.runtime.openOptionsPage();
     return;
   }
 
   const type = command === 'show-halo' ? 'halo' : 'open-bar';
   const viewerBase = chrome.runtime.getURL(VIEWER_PAGE);
 
-  if (tab.url.startsWith(viewerBase)) {
+  if (url.startsWith(viewerBase)) {
     chrome.runtime.sendMessage({ type }).catch(() => {});
     return;
   }
 
-  if (PDF_PATH.test(new URL(tab.url).pathname)) {
-    const src = encodeURIComponent(tab.url);
+  if (url && PDF_PATH.test(new URL(url).pathname)) {
+    const src = encodeURIComponent(url);
     await chrome.tabs.create({
-      url: `${viewerBase}?src=${src}&bar=1`,
+      url: `${viewerBase}?src=${src}&cmd=${type}`,
       index: tab.index + 1,
       openerTabId: tab.id
     });
     return;
   }
 
-  chrome.tabs.sendMessage(tab.id, { type }, { frameId: 0 }).catch(() => {});
+  await sendToPage(tab.id, type);
 });
+
+async function sendToPage(tabId, type) {
+  const message = { type };
+  try {
+    await chrome.tabs.sendMessage(tabId, message, { frameId: 0 });
+    return;
+  } catch {
+    // La página se abrió antes de conceder el permiso: se inyecta con activeTab.
+  }
+  try {
+    await chrome.scripting.insertCSS({ target: { tabId }, files: ['remarkable.css'] });
+    await chrome.scripting.executeScript({ target: { tabId }, files: ['content.js'] });
+    await chrome.tabs.sendMessage(tabId, message, { frameId: 0 });
+  } catch {
+    // Las páginas restringidas de Chrome no admiten scripts: no hay nada que mostrar.
+  }
+}

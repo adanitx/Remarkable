@@ -42,7 +42,8 @@ async function load() {
   const task = pdfjsLib.getDocument({
     url: src,
     withCredentials: /^https?:/i.test(src),
-    isEvalSupported: false
+    isEvalSupported: false,
+    verbosity: pdfjsLib.VerbosityLevel.ERRORS
   });
   task.onPassword = (updatePassword, reason) => askPassword(updatePassword, reason, task);
 
@@ -84,8 +85,9 @@ async function load() {
   }
 
   statusEl.remove();
-  if (params.get('bar') === '1') {
-    window.dispatchEvent(new CustomEvent('remarkable:command', { detail: 'open-bar' }));
+  const command = params.get('cmd');
+  if (command === 'open-bar' || command === 'halo') {
+    window.dispatchEvent(new CustomEvent('remarkable:command', { detail: command }));
   }
 }
 

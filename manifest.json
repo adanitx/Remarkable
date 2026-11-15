@@ -3,7 +3,7 @@
   "name": "Remarkable",
   "version": "1.1.0",
   "description": "Buscador personalizado con halo temporal que remarca la coincidencia activa, también en PDF.",
-  "permissions": ["storage", "unlimitedStorage"],
+  "permissions": ["storage", "unlimitedStorage", "activeTab", "scripting"],
   "optional_host_permissions": ["<all_urls>", "file:///*"],
   "background": {
     "service_worker": "background.js"
@@ -13,7 +13,7 @@
   },
   "commands": {
     "open-bar": {
-      "suggested_key": { "default": "Alt+G" },
+      "suggested_key": { "default": "Ctrl+Shift+F" },
       "description": "Abrir la barra de búsqueda (en un PDF, abre el visor de Remarkable)"
     },
     "show-halo": {
