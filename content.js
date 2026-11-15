@@ -433,13 +433,8 @@
 
   function paintHighlights() {
     if (!supportsHighlights) return;
-    if (overLimit()) {
-      CSS.highlights.delete(MATCH_HL);
-      CSS.highlights.delete(CURRENT_HL);
-      CSS.highlights.delete(SAVED_HL);
-      return;
-    }
-    if (state.ranges.length) CSS.highlights.set(MATCH_HL, new Highlight(...state.ranges));
+    if (overLimit()) CSS.highlights.delete(MATCH_HL);
+    else if (state.ranges.length) CSS.highlights.set(MATCH_HL, new Highlight(...state.ranges));
     else CSS.highlights.delete(MATCH_HL);
 
     const current = state.ranges[state.current];
