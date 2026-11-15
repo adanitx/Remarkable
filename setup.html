@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Remarkable: permisos</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; color: #1f2328; line-height: 1.5; }
+    h1 { font-size: 22px; }
+    .card { border: 1px solid #d0d7de; border-radius: 8px; padding: 16px 20px; margin: 16px 0; }
+    .card h2 { font-size: 16px; margin: 0 0 6px; }
+    .status { font-weight: 600; }
+    .ok { color: #1a7f37; }
+    .pending { color: #9a6700; }
+    .hint { color: #59636e; font-size: 13px; }
+    button { font: inherit; padding: 6px 14px; border-radius: 6px; border: 1px solid #1f883d; background: #1f883d; color: #fff; cursor: pointer; margin-top: 8px; }
+    button.secondary { background: #fff; color: #1f2328; border-color: #d0d7de; }
+    button:disabled { opacity: .5; cursor: default; }
+    .error { color: #cf222e; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Remarkable: permisos necesarios</h1>
+  <p>Remarkable necesita estos permisos para mostrar el buscador en tus páginas. Puedes concederlos ahora mismo.</p>
+
+  <div class="card">
+    <h2>1. Acceso a los sitios web</h2>
+    <p class="hint">Permite mostrar el buscador y el halo en cualquier página web.</p>
+    <div>Estado: <span class="status" id="web-status">comprobando…</span></div>
+    <button id="web-request">Conceder acceso a sitios web</button>
+    <div class="error" id="web-error"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Acceso a archivos locales (PDF abiertos desde el disco)</h2>
+    <p class="hint">Permite usar Remarkable en archivos <code>file://</code>. Chrome no permite concederlo desde una extensión: hay que activarlo a mano.</p>
+    <div>Estado: <span class="status" id="file-status">comprobando…</span></div>
+    <button id="file-request" class="secondary">Abrir configuración de la extensión</button>
+    <p class="hint">En la página que se abrirá, activa <strong>«Permitir acceso a las URL de archivos»</strong>. Después vuelve aquí y pulsa «Actualizar estado».</p>
+    <button id="refresh" class="secondary">Actualizar estado</button>
+  </div>
+
+  <p class="hint">Si cambias un permiso con pestañas ya abiertas, recarga esas pestañas para que el buscador se active en ellas.</p>
+  <script src="setup.js"></script>
+</body>
+</html>

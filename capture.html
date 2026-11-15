@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Remarkable - Recortes</title>
+  <style>
+    body { margin: 0; background: #202124; color: #e8eaed; font: 14px system-ui, sans-serif; }
+    header {
+      position: sticky; top: 0; z-index: 1;
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px; background: #303134;
+    }
+    button { padding: 6px 14px; font: inherit; cursor: pointer; }
+    main { padding: 16px; display: flex; justify-content: center; }
+    img { max-width: 100%; height: auto; background: #fff; box-shadow: 0 2px 12px rgba(0, 0, 0, .5); }
+    #message { padding: 24px; }
+  </style>
+</head>
+<body>
+  <header>
+    <button id="download" disabled>Descargar PNG</button>
+    <span id="info"></span>
+  </header>
+  <main>
+    <img id="shot" alt="Recortes de Remarkable" hidden>
+    <p id="message">Cargando recortes…</p>
+  </main>
+  <script src="capture.js"></script>
+</body>
+</html>

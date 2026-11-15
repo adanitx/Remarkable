@@ -1,0 +1,41 @@
+::highlight(remarkable-match) {
+  background-color: rgba(255, 235, 59, 0.55);
+  color: inherit;
+}
+
+::highlight(remarkable-current) {
+  background-color: #ff9632;
+  color: #000;
+}
+
+::highlight(remarkable-saved) {
+  background-color: rgba(52, 168, 83, 0.45);
+  color: inherit;
+}
+
+.remarkable-halo {
+  position: fixed;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 2147483646;
+  border-radius: 8px;
+  border: 3px solid var(--remarkable-color, #ff3b30);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.6),
+    0 0 24px 6px var(--remarkable-color, #ff3b30);
+  animation-name: remarkable-pulse;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+.remarkable-halo.remarkable-halo-static {
+  animation: none;
+  opacity: 1;
+}
+
+@keyframes remarkable-pulse {
+  0% { opacity: 0; transform: scale(1.35); }
+  15% { opacity: 1; transform: scale(1); }
+  70% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
